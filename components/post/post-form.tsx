@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useUser } from "@/lib/hooks/use-user";
+import { deleteImage, uploadImage } from "@/lib/supabase/storage";
 import { Post } from "@/types";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Image as ImageIcon, X } from "lucide-react";
@@ -27,16 +29,17 @@ interface PostFormProps {
 }
 
 export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
+  const { user } = useUser();
   const [formData, setFormData] = useState<Partial<Post>>(
     initialData || {
       title: "",
-      scheduledDate: new Date(),
+      scheduled_date: new Date(),
       platform: "instagram",
       status: "draft",
     }
   );
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    initialData?.imageUrl || null
+    initialData?.image_url || null
   );
   const [isDragging, setIsDragging] = useState(false);
 
@@ -57,33 +60,34 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleImageUpload = async (file: File) => {
+    if (!user?.id) return;
+
+    const { url, error } = await uploadImage(file, user.id);
+    if (error) {
+      console.error("Failed to upload image:", error);
+      return;
+    }
+
+    setPreviewUrl(URL.createObjectURL(file));
+    setFormData({ ...formData, image_url: url || undefined });
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
 
     const files = e.dataTransfer.files;
     if (files?.[0]) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setPreviewUrl(base64String);
-        setFormData({ ...formData, imageUrl: base64String });
-      };
-      reader.readAsDataURL(files[0]);
+      await handleImageUpload(files[0]);
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setPreviewUrl(base64String);
-        setFormData({ ...formData, imageUrl: base64String });
-      };
-      reader.readAsDataURL(file);
+      await handleImageUpload(file);
     }
   };
 
@@ -92,9 +96,17 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
     onSubmit(formData);
   };
 
-  const removeImage = () => {
+  const removeImage = async () => {
+    if (formData.image_url) {
+      const { error } = await deleteImage(formData.image_url);
+      if (error) {
+        console.error("Failed to delete image:", error);
+        return;
+      }
+    }
+
     setPreviewUrl(null);
-    setFormData({ ...formData, imageUrl: undefined });
+    setFormData({ ...formData, image_url: undefined });
   };
 
   return (
@@ -190,8 +202,8 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
               className="w-full justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {formData.scheduledDate ? (
-                format(formData.scheduledDate, "PPP")
+              {formData.scheduled_date ? (
+                format(formData.scheduled_date, "PPP")
               ) : (
                 <span>Pick a date</span>
               )}
@@ -200,9 +212,9 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={formData.scheduledDate}
+              selected={formData.scheduled_date}
               onSelect={(date) =>
-                date && setFormData({ ...formData, scheduledDate: date })
+                date && setFormData({ ...formData, scheduled_date: date })
               }
             />
           </PopoverContent>

@@ -16,12 +16,12 @@ export function PostCard({ post, onClick }: PostCardProps) {
       draggable
       onClick={onClick}
     >
-      {post.imageUrl && (
+      {post.image_url && (
         <div className="relative w-full aspect-square">
           <img
-            src={post.imageUrl}
+            src={post.image_url}
             alt={post.title}
-            className="object-cover w-full h-full"
+            className="w-full h-32 object-cover rounded-t-lg"
           />
         </div>
       )}

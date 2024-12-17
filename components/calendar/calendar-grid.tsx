@@ -17,7 +17,7 @@ export function CalendarGrid({ days, posts, onPostClick }: CalendarGridProps) {
   const getPostsForDay = (date: Date) => {
     return posts.filter(
       (post) =>
-        format(new Date(post.scheduledDate), "yyyy-MM-dd") ===
+        format(new Date(post.scheduled_date), "yyyy-MM-dd") ===
         format(date, "yyyy-MM-dd")
     );
   };

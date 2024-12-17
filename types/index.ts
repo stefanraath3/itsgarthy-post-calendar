@@ -1,17 +1,18 @@
-export type Post = {
+export interface Post {
   id: string;
+  user_id: string;
   title: string;
-  content: string;
-  imageUrl?: string;
-  scheduledDate: Date;
-  platform: 'twitter' | 'instagram' | 'facebook' | 'linkedin';
-  status: 'draft' | 'scheduled' | 'published';
-  userId: string;
-};
+  image_url?: string;
+  platform: "instagram" | "facebook" | "twitter" | "linkedin";
+  scheduled_date: Date;
+  status: "draft" | "scheduled" | "published";
+  created_at: string;
+  updated_at: string;
+}
 
 export type CalendarDay = {
   date: Date;
   posts: Post[];
 };
 
-export type CalendarView = 'month' | 'week' | 'day';
+export type CalendarView = "month" | "week" | "day";
