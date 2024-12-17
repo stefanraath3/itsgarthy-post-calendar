@@ -12,7 +12,7 @@ interface PostCardProps {
 export function PostCard({ post, onClick }: PostCardProps) {
   return (
     <Card
-      className="p-3 cursor-pointer hover:shadow-md transition-shadow flex flex-col gap-2"
+      className="cursor-pointer hover:shadow-md transition-shadow h-full"
       draggable
       onClick={onClick}
     >
@@ -21,12 +21,17 @@ export function PostCard({ post, onClick }: PostCardProps) {
           <img
             src={post.imageUrl}
             alt={post.title}
-            className="rounded-lg object-cover w-full h-full"
+            className="object-cover w-full h-full"
           />
         </div>
       )}
-      <div className="flex flex-col gap-2">
-        <p className="text-sm leading-relaxed">{post.title}</p>
+      <div className="p-3 space-y-2">
+        <div className="space-y-1">
+          <span className="text-sm font-medium text-muted-foreground">
+            caption:
+          </span>
+          <p className="text-sm">{post.title}</p>
+        </div>
         <Badge
           variant={post.status === "published" ? "default" : "secondary"}
           className="w-fit"

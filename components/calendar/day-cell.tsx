@@ -24,23 +24,21 @@ export function DayCell({
     <div
       key={day.toISOString()}
       className={cn(
-        "min-h-[300px] p-2 border rounded-lg flex flex-col",
+        "min-h-[400px] p-3 border rounded-lg flex flex-col",
         format(day, "MM") !== format(new Date(), "MM") && "bg-muted"
       )}
       onDragOver={onDragOver}
       onDrop={() => onDrop(day)}
     >
-      <div className="font-medium text-sm mb-2 flex flex-col">
+      <div className="font-medium text-sm mb-3 flex flex-col">
         <span className="text-muted-foreground">{format(day, "EEEE")}</span>
         <span className="text-lg">{format(day, "d")}</span>
       </div>
-      <div className="space-y-2 flex-1 overflow-y-auto">
+      <div className="space-y-4 flex-1 overflow-y-auto">
         {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            onClick={() => onPostClick(post)}
-          />
+          <div key={post.id} className="h-[300px]">
+            <PostCard post={post} onClick={() => onPostClick(post)} />
+          </div>
         ))}
       </div>
     </div>
