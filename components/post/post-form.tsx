@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Post } from "@/types";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Image as ImageIcon, X } from "lucide-react";
@@ -106,10 +106,11 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Caption</label>
-        <Input
+        <Textarea
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           placeholder="Write a caption for your post..."
+          className="min-h-[100px] resize-y"
         />
       </div>
 

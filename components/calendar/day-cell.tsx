@@ -3,7 +3,7 @@
 import { PostCard } from "@/components/post/post-card";
 import { cn } from "@/lib/utils";
 import { Post } from "@/types";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 
 interface DayCellProps {
   day: Date;
@@ -30,9 +30,19 @@ export function DayCell({
       onDragOver={onDragOver}
       onDrop={() => onDrop(day)}
     >
-      <div className="font-medium text-sm mb-3 flex flex-col">
+      <div className="font-medium text-sm mb-3 flex flex-col items-start">
         <span className="text-muted-foreground">{format(day, "EEEE")}</span>
-        <span className="text-lg">{format(day, "d")}</span>
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "flex items-center justify-center text-lg",
+              isToday(day) &&
+                "bg-primary text-primary-foreground w-8 h-8 rounded-full"
+            )}
+          >
+            {format(day, "d")}
+          </span>
+        </div>
       </div>
       <div className="space-y-4 flex-1 overflow-y-auto">
         {posts.map((post) => (
