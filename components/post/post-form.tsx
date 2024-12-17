@@ -38,6 +38,41 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     initialData?.imageUrl || null
   );
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragIn = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragOut = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files?.[0]) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setPreviewUrl(base64String);
+        setFormData({ ...formData, imageUrl: base64String });
+      };
+      reader.readAsDataURL(files[0]);
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,16 +101,28 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-medium">Image</label>
-        <div className="flex items-center gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => document.getElementById("image-upload")?.click()}
-          >
-            <ImageIcon className="mr-2 h-4 w-4" />
-            Upload Image
-          </Button>
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
+            isDragging ? "border-primary bg-primary/10" : "border-border"
+          }`}
+          onDragEnter={handleDragIn}
+          onDragLeave={handleDragOut}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <div className="flex flex-col items-center gap-2">
+            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Drag and drop an image, or{" "}
+              <button
+                type="button"
+                className="text-primary hover:underline"
+                onClick={() => document.getElementById("image-upload")?.click()}
+              >
+                click to upload
+              </button>
+            </p>
+          </div>
           <input
             id="image-upload"
             type="file"
