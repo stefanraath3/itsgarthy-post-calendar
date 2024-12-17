@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { format } from "date-fns";
-import { Post } from "@/types";
 import { DayCell } from "@/components/calendar/day-cell";
+import { Post } from "@/types";
+import { format } from "date-fns";
+import { useState } from "react";
 
 interface CalendarGridProps {
   days: Date[];
@@ -33,17 +33,19 @@ export function CalendarGrid({ days, posts, onPostClick }: CalendarGridProps) {
   };
 
   return (
-    <div className="grid grid-cols-7 gap-1 p-4">
-      {days.map((day) => (
-        <DayCell
-          key={day.toISOString()}
-          day={day}
-          posts={getPostsForDay(day)}
-          onPostClick={onPostClick}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        />
-      ))}
+    <div className="p-4">
+      <div className="grid grid-cols-7 gap-4">
+        {days.map((day) => (
+          <DayCell
+            key={day.toISOString()}
+            day={day}
+            posts={getPostsForDay(day)}
+            onPostClick={onPostClick}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          />
+        ))}
+      </div>
     </div>
   );
 }

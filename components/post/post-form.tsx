@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Post } from "@/types";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Image as ImageIcon, X } from "lucide-react";
@@ -31,9 +30,8 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
   const [formData, setFormData] = useState<Partial<Post>>(
     initialData || {
       title: "",
-      content: "",
       scheduledDate: new Date(),
-      platform: "twitter",
+      platform: "instagram",
       status: "draft",
     }
   );
@@ -67,24 +65,6 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Title</label>
-        <Input
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Content</label>
-        <Textarea
-          value={formData.content}
-          onChange={(e) =>
-            setFormData({ ...formData, content: e.target.value })
-          }
-        />
-      </div>
-
-      <div className="space-y-2">
         <label className="text-sm font-medium">Image</label>
         <div className="flex items-center gap-4">
           <Button
@@ -105,7 +85,7 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
           />
         </div>
         {previewUrl && (
-          <div className="relative w-full aspect-video mt-2">
+          <div className="relative w-full aspect-square mt-2">
             <img
               src={previewUrl}
               alt="Preview"
@@ -125,6 +105,15 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
       </div>
 
       <div className="space-y-2">
+        <label className="text-sm font-medium">Caption</label>
+        <Input
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          placeholder="Write a caption for your post..."
+        />
+      </div>
+
+      <div className="space-y-2">
         <label className="text-sm font-medium">Platform</label>
         <Select
           value={formData.platform}
@@ -136,9 +125,9 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="twitter">Twitter</SelectItem>
             <SelectItem value="instagram">Instagram</SelectItem>
             <SelectItem value="facebook">Facebook</SelectItem>
+            <SelectItem value="twitter">Twitter</SelectItem>
             <SelectItem value="linkedin">LinkedIn</SelectItem>
           </SelectContent>
         </Select>
