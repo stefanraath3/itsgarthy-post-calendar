@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUser } from "@/lib/hooks/use-user";
 import { deleteImage, uploadImage } from "@/lib/supabase/storage";
 import { Post } from "@/types";
-import { format } from "date-fns";
+import { format, parse, set } from "date-fns";
 import { Calendar as CalendarIcon, Image as ImageIcon, X } from "lucide-react";
 import { useState } from "react";
 
@@ -26,14 +26,15 @@ interface PostFormProps {
   initialData?: Partial<Post>;
   onSubmit: (data: Partial<Post>) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
-export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
+export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostFormProps) {
   const { user } = useUser();
   const [formData, setFormData] = useState<Partial<Post>>(
     initialData || {
       title: "",
-      scheduled_date: new Date(),
+      scheduled_date: set(new Date(), { hours: 12, minutes: 0, seconds: 0 }),
       platform: "instagram",
       status: "draft",
     }
@@ -110,30 +111,58 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Image</label>
-        <div
-          className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
-            isDragging ? "border-primary bg-primary/10" : "border-border"
-          }`}
-          onDragEnter={handleDragIn}
-          onDragLeave={handleDragOut}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <div className="flex flex-col items-center gap-2">
-            <ImageIcon className="h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Drag and drop an image, or{" "}
-              <button
-                type="button"
-                className="text-primary hover:underline"
-                onClick={() => document.getElementById("image-upload")?.click()}
-              >
-                click to upload
-              </button>
-            </p>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Image</label>
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 transition-colors ${
+              isDragging ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+            }`}
+            onDragEnter={handleDragIn}
+            onDragLeave={handleDragOut}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            {!previewUrl ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="p-3 bg-gray-50 rounded-full">
+                  <ImageIcon className="h-8 w-8 text-gray-400" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-500">
+                    Drag and drop an image, or{" "}
+                    <button
+                      type="button"
+                      className="text-primary font-medium hover:underline"
+                      onClick={() => document.getElementById("image-upload")?.click()}
+                    >
+                      click to upload
+                    </button>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    PNG, JPG up to 10MB
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="object-cover w-full h-full"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                  onClick={removeImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
           <input
             id="image-upload"
@@ -143,89 +172,129 @@ export function PostForm({ initialData, onSubmit, onCancel }: PostFormProps) {
             onChange={handleImageChange}
           />
         </div>
-        {previewUrl && (
-          <div className="relative w-full aspect-square mt-2">
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="rounded-lg object-cover w-full h-full"
-            />
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              className="absolute top-2 right-2"
-              onClick={removeImage}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Caption</label>
-        <Textarea
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="Write a caption for your post..."
-          className="min-h-[100px] resize-y"
-        />
-      </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Caption</label>
+          <Textarea
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            placeholder="Write a caption for your post..."
+            className="min-h-[120px] resize-y"
+          />
+        </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Platform</label>
-        <Select
-          value={formData.platform}
-          onValueChange={(value) =>
-            setFormData({ ...formData, platform: value as Post["platform"] })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="instagram">Instagram</SelectItem>
-            <SelectItem value="facebook">Facebook</SelectItem>
-            <SelectItem value="twitter">Twitter</SelectItem>
-            <SelectItem value="linkedin">LinkedIn</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Schedule Date</label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {formData.scheduled_date ? (
-                format(formData.scheduled_date, "PPP")
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formData.scheduled_date}
-              onSelect={(date) =>
-                date && setFormData({ ...formData, scheduled_date: date })
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Platform</label>
+            <Select
+              value={formData.platform}
+              onValueChange={(value) =>
+                setFormData({ ...formData, platform: value as Post["platform"] })
               }
-            />
-          </PopoverContent>
-        </Popover>
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="instagram">Instagram</SelectItem>
+                <SelectItem value="facebook">Facebook</SelectItem>
+                <SelectItem value="twitter">Twitter</SelectItem>
+                <SelectItem value="linkedin">LinkedIn</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Schedule</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.scheduled_date ? (
+                      format(formData.scheduled_date, "MMM d, yyyy")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.scheduled_date}
+                    onSelect={(date) =>
+                      setFormData({
+                        ...formData,
+                        scheduled_date: date ? set(date, {
+                          hours: formData.scheduled_date?.getHours() || 12,
+                          minutes: formData.scheduled_date?.getMinutes() || 0,
+                          seconds: 0
+                        }) : new Date()
+                      })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Select
+                value={format(formData.scheduled_date || new Date(), "HH:mm")}
+                onValueChange={(time) => {
+                  const [hours, minutes] = time.split(":").map(Number);
+                  setFormData({
+                    ...formData,
+                    scheduled_date: set(formData.scheduled_date || new Date(), {
+                      hours,
+                      minutes,
+                      seconds: 0
+                    })
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 24 * 4 }).map((_, i) => {
+                    const hours = Math.floor(i / 4);
+                    const minutes = (i % 4) * 15;
+                    const time = format(set(new Date(), { hours, minutes }), "h:mm a");
+                    return (
+                      <SelectItem
+                        key={i}
+                        value={`${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`}
+                      >
+                        {time}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="flex justify-end space-x-2">
+      <div className="flex items-center justify-end gap-2 pt-4 border-t">
+        {onDelete && (
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onDelete}
+          >
+            Delete Post
+          </Button>
+        )}
+        <div className="flex-1" />
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit">
+          {initialData ? "Save Changes" : "Create Post"}
+        </Button>
       </div>
     </form>
   );

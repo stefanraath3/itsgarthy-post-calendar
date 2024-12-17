@@ -33,8 +33,8 @@ export function CalendarGrid({ days, posts, onPostClick }: CalendarGridProps) {
   };
 
   return (
-    <div className="px-2 py-6">
-      <div className="grid grid-cols-7 gap-2 max-w-[1800px] mx-auto">
+    <div className="p-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 max-w-[1800px] mx-auto">
         {days.map((day) => (
           <DayCell
             key={day.toISOString()}

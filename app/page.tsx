@@ -17,7 +17,7 @@ import {
   format,
 } from "date-fns";
 import { useUser } from "@/lib/hooks/use-user";
-import { createPost, updatePost, getUserPosts } from "@/lib/supabase/posts";
+import { createPost, updatePost, getUserPosts, deletePost } from "@/lib/supabase/posts";
 
 export default function Home() {
   const { user } = useUser();
@@ -77,6 +77,16 @@ export default function Home() {
     }
   };
 
+  const handlePostDelete = async (post: Post) => {
+    if (!user?.id) return;
+
+    const { error } = await deletePost(post.id);
+    if (!error) {
+      setPosts(posts.filter((p) => p.id !== post.id));
+      setIsPostDialogOpen(false);
+    }
+  };
+
   const handlePostClick = (post: Post) => {
     setSelectedPost(post);
     setIsPostDialogOpen(true);
@@ -85,14 +95,18 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-3xl font-bold">Content Calendar</h1>
+        <div className="flex items-center justify-between p-4 border-b">
+          <h1 className="text-3xl font-bold tracking-tight">Content Calendar</h1>
           <div className="flex items-center gap-2">
             <SignOutButton />
-            <Button onClick={() => {
-              setSelectedPost(undefined);
-              setIsPostDialogOpen(true);
-            }}>
+            <Button 
+              onClick={() => {
+                setSelectedPost(undefined);
+                setIsPostDialogOpen(true);
+              }}
+              size="sm"
+              className="font-medium"
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Post
             </Button>
@@ -119,6 +133,7 @@ export default function Home() {
           open={isPostDialogOpen}
           onOpenChange={setIsPostDialogOpen}
           onSave={handlePostSave}
+          onDelete={selectedPost ? handlePostDelete : undefined}
         />
       </div>
     </div>
