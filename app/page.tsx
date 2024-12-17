@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarHeader } from "@/components/calendar/calendar-header";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { PostDialog } from "@/components/post/post-dialog";
@@ -16,15 +16,26 @@ import {
   subMonths,
   format,
 } from "date-fns";
+import { useUser } from "@/lib/hooks/use-user";
+import { createPost, updatePost, getUserPosts } from "@/lib/supabase/posts";
 
 export default function Home() {
+  const { user } = useUser();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>("month");
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | undefined>();
-  
-  // Temporary mock data
   const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    if (user?.id) {
+      getUserPosts(user.id).then(({ posts, error }) => {
+        if (posts) {
+          setPosts(posts);
+        }
+      });
+    }
+  }, [user?.id]);
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentDate),
@@ -43,18 +54,26 @@ export default function Home() {
     setCurrentDate(new Date());
   };
 
-  const handlePostSave = (post: Partial<Post>) => {
+  const handlePostSave = async (post: Partial<Post>) => {
+    if (!user?.id) return;
+
     if (selectedPost) {
-      setPosts(posts.map((p) => (p.id === selectedPost.id ? { ...p, ...post } : p)));
+      const { post: updatedPost } = await updatePost({
+        ...post,
+        id: selectedPost.id,
+        user_id: user.id,
+      });
+      if (updatedPost) {
+        setPosts(posts.map((p) => (p.id === selectedPost.id ? updatedPost : p)));
+      }
     } else {
-      setPosts([
-        ...posts,
-        {
-          ...post,
-          id: Math.random().toString(),
-          userId: "user1",
-        } as Post,
-      ]);
+      const { post: newPost } = await createPost({
+        ...post,
+        user_id: user.id,
+      });
+      if (newPost) {
+        setPosts([...posts, newPost]);
+      }
     }
   };
 
