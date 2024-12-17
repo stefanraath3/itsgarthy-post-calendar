@@ -24,7 +24,7 @@ export function DayCell({
     <div
       key={day.toISOString()}
       className={cn(
-        "min-h-[400px] p-3 border rounded-lg flex flex-col",
+        "min-h-[300px] p-3 border rounded-lg flex flex-col",
         format(day, "MM") !== format(new Date(), "MM") && "bg-muted"
       )}
       onDragOver={onDragOver}
@@ -44,9 +44,9 @@ export function DayCell({
           </span>
         </div>
       </div>
-      <div className="space-y-4 flex-1 overflow-y-auto">
+      <div className="space-y-3 flex-1 overflow-y-auto">
         {posts.map((post) => (
-          <div key={post.id} className="h-[300px]">
+          <div key={post.id} className="h-[200px]">
             <PostCard post={post} onClick={() => onPostClick(post)} />
           </div>
         ))}

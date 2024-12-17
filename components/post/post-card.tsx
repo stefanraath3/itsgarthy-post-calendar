@@ -25,16 +25,16 @@ export function PostCard({ post, onClick }: PostCardProps) {
           />
         </div>
       )}
-      <div className="p-3 space-y-2 flex-1 flex flex-col">
-        <div className="flex-1 overflow-y-auto">
-          <span className="text-sm font-medium text-muted-foreground block mb-1">
+      <div className="p-3 flex flex-col justify-between flex-1">
+        <div>
+          <span className="text-sm font-medium text-muted-foreground">
             caption:
           </span>
-          <p className="text-sm whitespace-pre-wrap">{post.title}</p>
+          <p className="text-sm truncate max-w-full">{post.title}</p>
         </div>
         <Badge
           variant={post.status === "published" ? "default" : "secondary"}
-          className="w-fit mt-auto"
+          className="w-fit mt-2"
         >
           {post.platform}
         </Badge>
