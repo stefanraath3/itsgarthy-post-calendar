@@ -143,9 +143,9 @@ export default function LoginPage() {
         </Card>
 
         <div className="text-center text-sm text-muted-foreground">
-          <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
-          {" · "}
-          <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+          <a href="#" className="hover:text-primary transition-colors">✨ Redesign ✨</a>
+     
+        
         </div>
       </div>
     </main>
