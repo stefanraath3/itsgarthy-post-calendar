@@ -2,6 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { CalendarDays } from "lucide-react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -69,54 +72,82 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md space-y-8 p-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Welcome to Content Calendar</h1>
-          <p className="text-muted-foreground mt-2">
-            {isSignUp ? "Create an account" : "Sign in to your account"}
-          </p>
+    <main className="min-h-screen bg-gradient-to-b from-background to-secondary flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center space-y-2">
+          <div className="flex justify-center">
+            <div className="bg-primary/10 p-3 rounded-xl">
+              <CalendarDays className="w-8 h-8 text-primary" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">itsgarthy&apos;s Content Calendar</h1>
+          <p className="text-muted-foreground text-sm">Plan, schedule, and manage your content seamlessly</p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">Email</label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+        <Card className="border-border/40 shadow-lg">
+          <form onSubmit={handleAuth}>
+            <CardHeader>
+              <CardTitle>{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
+              <CardDescription>
+                {isSignUp 
+                  ? "Enter your details to create a new account" 
+                  : "Enter your email to sign in to your account"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="hello@example.com"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              {error && (
+                <div className="text-sm text-red-500 bg-red-50 p-2 rounded-md">
+                  {error}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <Button className="w-full" type="submit" disabled={isLoading}>
+                {isLoading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+              </Button>
+              <div className="text-sm text-center space-x-1">
+                <span className="text-muted-foreground">
+                  {isSignUp ? "Already have an account?" : "Don't have an account?"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-primary hover:underline"
+                >
+                  {isSignUp ? "Sign in" : "Sign up"}
+                </button>
+              </div>
+            </CardFooter>
+          </form>
+        </Card>
 
-          <div>
-            <label className="text-sm font-medium">Password</label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-
-          <Button className="w-full" type="submit" disabled={isLoading}>
-            {isLoading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={() => setIsSignUp(!isSignUp)}
-          >
-            {isSignUp
-              ? "Already have an account? Sign in"
-              : "Need an account? Sign up"}
-          </Button>
-        </form>
+        <div className="text-center text-sm text-muted-foreground">
+          <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
+          {" · "}
+          <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
