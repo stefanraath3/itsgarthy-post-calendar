@@ -29,16 +29,27 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${location.origin}/auth/callback`,
-          },
+            data: {
+              email_confirmed: true
+            }
+          }
         });
 
         if (signUpError) throw signUpError;
-        setError("Please check your email to confirm your account.");
+        
+        // Immediately sign in after registration
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) throw signInError;
+        router.push("/");
+        router.refresh();
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,

@@ -96,7 +96,8 @@ export default function Home() {
     <main className="w-screen overflow-x-hidden">
       <div className="flex flex-col w-full">
         <div className="flex items-center justify-between p-4">
-          <h1 className="text-3xl font-bold">Content Calendar</h1>
+        <h1 className="text-3xl font-bold">📅 Welcome to your Content Calendar! 🎉</h1>
+
           <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" onClick={() => window.location.reload()}>
               <svg

@@ -27,7 +27,7 @@ export function DayCell({
     <div
       key={day.toISOString()}
       className={cn(
-        "h-[300px] p-4 border rounded-lg flex flex-col bg-card transition-colors",
+        "h-[400px] p-4 border rounded-lg flex flex-col bg-card transition-colors",
         !isCurrentMonth && "bg-muted/50",
         "hover:border-primary/20"
       )}
@@ -41,13 +41,16 @@ export function DayCell({
             {format(day, "EEE")}
           </span>
           <span
-            className={cn(
-              "text-2xl font-semibold -mt-1",
-              isToday(day) && "text-primary"
-            )}
-          >
-            {format(day, "d")}
-          </span>
+  className={cn(
+    "text-2xl font-semibold -mt-1 inline-flex items-center justify-center",
+    isToday(day)
+      ? "text-white bg-primary w-10 h-10 rounded-full"
+      : ""
+  )}
+>
+  {format(day, "d")}
+</span>
+
         </div>
         {posts.length > 0 && (
           <Badge variant="secondary" className="text-base px-3 py-1">
@@ -55,15 +58,25 @@ export function DayCell({
           </Badge>
         )}
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
-        <div className="grid gap-3">
-          {posts.map((post) => (
-            <div key={post.id} className="min-h-[120px]">
-              <PostCard post={post} onClick={() => onPostClick(post)} />
-            </div>
-          ))}
+      {posts.length > 1 ? (
+        <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
+          <div className="grid gap-3">
+            {posts.map((post) => (
+              <div key={post.id} className="h-[280px]">
+                <PostCard post={post} onClick={() => onPostClick(post)} />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          {posts.length === 1 && (
+            <div className="h-[280px] w-full">
+              <PostCard post={posts[0]} onClick={() => onPostClick(posts[0])} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
