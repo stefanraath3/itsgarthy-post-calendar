@@ -93,41 +93,53 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h1 className="text-3xl font-bold tracking-tight">Content Calendar</h1>
-          <div className="flex items-center gap-2">
-            <SignOutButton />
-            <Button 
-              onClick={() => {
+    <main className="w-screen overflow-x-hidden">
+      <div className="flex flex-col w-full">
+        <div className="flex items-center justify-between p-4">
+          <h1 className="text-3xl font-bold">Content Calendar</h1>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" onClick={() => window.location.reload()}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+            </Button>
+            <Button onClick={() => {
                 setSelectedPost(undefined);
                 setIsPostDialogOpen(true);
-              }}
-              size="sm"
-              className="font-medium"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Post
+              }}>
+              <Plus className="mr-2 h-4 w-4" /> New Post
             </Button>
+            <SignOutButton />
           </div>
         </div>
-
-        <CalendarHeader
-          view={view}
-          onViewChange={setView}
-          onTodayClick={handleToday}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          title={format(currentDate, "MMMM yyyy")}
-        />
-
+        <div className="px-4">
+          <CalendarHeader
+            view={view}
+            onViewChange={setView}
+            onTodayClick={() => setCurrentDate(new Date())}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            title={format(currentDate, "MMMM yyyy")}
+          />
+        </div>
         <CalendarGrid
           days={days}
           posts={posts}
           onPostClick={handlePostClick}
         />
-
         <PostDialog
           post={selectedPost}
           open={isPostDialogOpen}
@@ -136,6 +148,6 @@ export default function Home() {
           onDelete={selectedPost ? handlePostDelete : undefined}
         />
       </div>
-    </div>
+    </main>
   );
 }

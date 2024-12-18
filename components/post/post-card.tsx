@@ -38,7 +38,7 @@ export function PostCard({ post, onClick }: PostCardProps) {
       </div>
       
       {post.image_urls?.length > 0 ? (
-        <div className="relative w-full aspect-square">
+        <div className="relative w-full aspect-[4/3] overflow-hidden bg-muted">
           <img
             src={post.image_urls[0]}
             alt={post.title}
@@ -55,14 +55,16 @@ export function PostCard({ post, onClick }: PostCardProps) {
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       ) : (
-        <div className="w-full aspect-square bg-muted flex items-center justify-center">
+        <div className="flex items-center justify-center h-full aspect-[4/3] bg-muted">
           <ImageIcon className="h-8 w-8 text-muted-foreground" />
         </div>
       )}
       
-      <div className="p-3">
+      <div className="p-3 flex-1 flex items-start">
         {post.title && (
-          <p className="text-sm text-foreground line-clamp-2">{post.title}</p>
+          <p className="text-sm text-foreground line-clamp-2">
+            {post.title}
+          </p>
         )}
       </div>
     </Card>

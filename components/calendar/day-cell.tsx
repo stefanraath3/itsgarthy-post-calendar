@@ -27,16 +27,17 @@ export function DayCell({
     <div
       key={day.toISOString()}
       className={cn(
-        "min-h-[300px] p-3 border rounded-lg flex flex-col bg-card transition-colors",
+        "min-h-[300px] p-4 border rounded-lg flex flex-col bg-card transition-colors",
         !isCurrentMonth && "bg-muted/50",
         "hover:border-primary/20"
       )}
+      style={{ minWidth: '200px' }}
       onDragOver={onDragOver}
       onDrop={() => onDrop(day)}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex flex-col items-start">
-          <span className="text-sm text-muted-foreground font-medium">
+          <span className="text-base text-muted-foreground font-medium">
             {format(day, "EEE")}
           </span>
           <span
@@ -49,14 +50,14 @@ export function DayCell({
           </span>
         </div>
         {posts.length > 0 && (
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-base px-3 py-1">
             {posts.length} post{posts.length !== 1 && "s"}
           </Badge>
         )}
       </div>
-      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-hide">
+      <div className="space-y-6 flex-1">
         {posts.map((post) => (
-          <div key={post.id}>
+          <div key={post.id} className="h-full">
             <PostCard post={post} onClick={() => onPostClick(post)} />
           </div>
         ))}

@@ -33,18 +33,22 @@ export function CalendarGrid({ days, posts, onPostClick }: CalendarGridProps) {
   };
 
   return (
-    <div className="p-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 max-w-[1800px] mx-auto">
-        {days.map((day) => (
-          <DayCell
-            key={day.toISOString()}
-            day={day}
-            posts={getPostsForDay(day)}
-            onPostClick={onPostClick}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          />
-        ))}
+    <div className="min-h-screen w-screen overflow-x-hidden">
+      <div className="w-full">
+        <div className="flex flex-col gap-8">
+          <div className="grid grid-cols-7 gap-4 w-full px-4">
+            {days.map((day) => (
+              <DayCell
+                key={day.toISOString()}
+                day={day}
+                posts={getPostsForDay(day)}
+                onPostClick={onPostClick}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
