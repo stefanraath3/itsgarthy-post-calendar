@@ -19,7 +19,7 @@ import { useUser } from "@/lib/hooks/use-user";
 import { deleteImage, uploadImage } from "@/lib/supabase/storage";
 import { Post } from "@/types";
 import { format, parse, set } from "date-fns";
-import { Calendar as CalendarIcon, Image as ImageIcon, X } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Image as ImageIcon, X } from "lucide-react";
 import { useState } from "react";
 
 interface PostFormProps {
@@ -37,12 +37,14 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
       scheduled_date: set(new Date(), { hours: 12, minutes: 0, seconds: 0 }),
       platform: "instagram",
       status: "draft",
+      image_urls: [],
     }
   );
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    initialData?.image_url || null
+  const [previewUrls, setPreviewUrls] = useState<string[]>(
+    initialData?.image_urls || []
   );
   const [isDragging, setIsDragging] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -61,17 +63,27 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
     setIsDragging(false);
   };
 
-  const handleImageUpload = async (file: File) => {
+  const handleImageUpload = async (files: FileList) => {
     if (!user?.id) return;
 
-    const { url, error } = await uploadImage(file, user.id);
-    if (error) {
-      console.error("Failed to upload image:", error);
-      return;
+    const newUrls: string[] = [];
+    const newPreviewUrls: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const { url, error } = await uploadImage(file, user.id);
+      if (error) {
+        console.error("Failed to upload image:", error);
+        continue;
+      }
+      if (url) {
+        newUrls.push(url);
+        newPreviewUrls.push(URL.createObjectURL(file));
+      }
     }
 
-    setPreviewUrl(URL.createObjectURL(file));
-    setFormData({ ...formData, image_url: url || undefined });
+    setPreviewUrls([...previewUrls, ...newPreviewUrls]);
+    setFormData({ ...formData, image_urls: [...(formData.image_urls || []), ...newUrls] });
   };
 
   const handleDrop = async (e: React.DragEvent) => {
@@ -80,15 +92,38 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
     setIsDragging(false);
 
     const files = e.dataTransfer.files;
-    if (files?.[0]) {
-      await handleImageUpload(files[0]);
+    if (files?.length) {
+      await handleImageUpload(files);
     }
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      await handleImageUpload(file);
+    const files = e.target.files;
+    if (files?.length) {
+      await handleImageUpload(files);
+    }
+  };
+
+  const removeImage = async (index: number) => {
+    const imageUrl = formData.image_urls?.[index];
+    if (imageUrl) {
+      const { error } = await deleteImage(imageUrl);
+      if (error) {
+        console.error("Failed to delete image:", error);
+        return;
+      }
+    }
+
+    const newPreviewUrls = [...previewUrls];
+    newPreviewUrls.splice(index, 1);
+    setPreviewUrls(newPreviewUrls);
+
+    const newImageUrls = [...(formData.image_urls || [])];
+    newImageUrls.splice(index, 1);
+    setFormData({ ...formData, image_urls: newImageUrls });
+
+    if (currentImageIndex >= newPreviewUrls.length) {
+      setCurrentImageIndex(Math.max(0, newPreviewUrls.length - 1));
     }
   };
 
@@ -97,24 +132,11 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
     onSubmit(formData);
   };
 
-  const removeImage = async () => {
-    if (formData.image_url) {
-      const { error } = await deleteImage(formData.image_url);
-      if (error) {
-        console.error("Failed to delete image:", error);
-        return;
-      }
-    }
-
-    setPreviewUrl(null);
-    setFormData({ ...formData, image_url: undefined });
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Image</label>
+          <label className="text-sm font-medium text-gray-700">Images</label>
           <div
             className={`border-2 border-dashed rounded-lg p-8 transition-colors ${
               isDragging ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
@@ -124,14 +146,14 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            {!previewUrl ? (
+            {previewUrls.length === 0 ? (
               <div className="flex flex-col items-center gap-3">
                 <div className="p-3 bg-gray-50 rounded-full">
                   <ImageIcon className="h-8 w-8 text-gray-400" />
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-gray-500">
-                    Drag and drop an image, or{" "}
+                    Drag and drop images, or{" "}
                     <button
                       type="button"
                       className="text-primary font-medium hover:underline"
@@ -146,21 +168,68 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
                 </div>
               </div>
             ) : (
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="object-cover w-full h-full"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-white/80 hover:bg-white"
-                  onClick={removeImage}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+              <div className="space-y-4">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
+                  <img
+                    src={previewUrls[currentImageIndex]}
+                    alt={`Preview ${currentImageIndex + 1}`}
+                    className="object-cover w-full h-full"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                    onClick={() => removeImage(currentImageIndex)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                  {previewUrls.length > 1 && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                        onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? previewUrls.length - 1 : prev - 1))}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                        onClick={() => setCurrentImageIndex((prev) => (prev === previewUrls.length - 1 ? 0 : prev + 1))}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+                {previewUrls.length > 1 && (
+                  <div className="flex justify-center gap-2">
+                    {previewUrls.map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          index === currentImageIndex ? "bg-primary" : "bg-gray-300"
+                        }`}
+                        onClick={() => setCurrentImageIndex(index)}
+                      />
+                    ))}
+                  </div>
+                )}
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    className="text-primary text-sm font-medium hover:underline"
+                    onClick={() => document.getElementById("image-upload")?.click()}
+                  >
+                    Add more images
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -168,6 +237,7 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
             id="image-upload"
             type="file"
             accept="image/*"
+            multiple
             className="hidden"
             onChange={handleImageChange}
           />
@@ -292,7 +362,7 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={!formData.image_urls?.length}>
           {initialData ? "Save Changes" : "Create Post"}
         </Button>
       </div>

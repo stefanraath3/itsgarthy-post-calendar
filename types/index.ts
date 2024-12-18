@@ -2,8 +2,8 @@ export interface Post {
   id: string;
   user_id: string;
   title: string;
-  image_url?: string;
-  platform: "instagram" | "facebook" | "twitter" | "linkedin";
+  image_urls: string[];
+  platform: "instagram" | "facebook" | "tiktok";
   scheduled_date: Date;
   status: "draft" | "scheduled" | "published";
   created_at: string;

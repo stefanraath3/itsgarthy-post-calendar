@@ -3,10 +3,24 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 const supabase = createClientComponentClient();
 
+// Helper function to ensure backward compatibility during migration
+function normalizePost(post: any): Post {
+  return {
+    ...post,
+    // Handle both old image_url and new image_urls format
+    image_urls: post.image_urls || (post.image_url ? [post.image_url] : []),
+  };
+}
+
 export async function createPost(post: Partial<Post>) {
+  const postData = {
+    ...post,
+    image_urls: post.image_urls || [],
+  };
+
   const { data, error } = await supabase
     .from("posts")
-    .insert([post])
+    .insert([postData])
     .select()
     .single();
 
@@ -15,13 +29,18 @@ export async function createPost(post: Partial<Post>) {
     return { post: null, error };
   }
 
-  return { post: data as Post, error: null };
+  return { post: normalizePost(data), error: null };
 }
 
 export async function updatePost(post: Partial<Post>) {
+  const postData = {
+    ...post,
+    image_urls: post.image_urls || [],
+  };
+
   const { data, error } = await supabase
     .from("posts")
-    .update(post)
+    .update(postData)
     .eq("id", post.id)
     .select()
     .single();
@@ -31,7 +50,7 @@ export async function updatePost(post: Partial<Post>) {
     return { post: null, error };
   }
 
-  return { post: data as Post, error: null };
+  return { post: normalizePost(data), error: null };
 }
 
 export async function getUserPosts(userId: string) {
@@ -46,7 +65,10 @@ export async function getUserPosts(userId: string) {
     return { posts: null, error };
   }
 
-  return { posts: data as Post[], error: null };
+  // Normalize all posts to use image_urls
+  const posts = data.map(normalizePost);
+
+  return { posts, error: null };
 }
 
 export async function deletePost(postId: string) {
