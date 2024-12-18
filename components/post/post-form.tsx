@@ -45,6 +45,8 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
   );
   const [isDragging, setIsDragging] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -66,6 +68,10 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
   const handleImageUpload = async (files: FileList) => {
     if (!user?.id) return;
 
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    const totalFiles = files.length;
     const newUrls: string[] = [];
     const newPreviewUrls: string[] = [];
 
@@ -80,10 +86,13 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
         newUrls.push(url);
         newPreviewUrls.push(URL.createObjectURL(file));
       }
+      setUploadProgress(((i + 1) / totalFiles) * 100);
     }
 
     setPreviewUrls([...previewUrls, ...newPreviewUrls]);
     setFormData({ ...formData, image_urls: [...(formData.image_urls || []), ...newUrls] });
+    setIsUploading(false);
+    setUploadProgress(0);
   };
 
   const handleDrop = async (e: React.DragEvent) => {
@@ -138,7 +147,7 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Images</label>
           <div
-            className={`border-2 border-dashed rounded-lg p-8 transition-colors ${
+            className={`relative border-2 border-dashed rounded-lg p-8 transition-colors ${
               isDragging ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
             }`}
             onDragEnter={handleDragIn}
@@ -146,7 +155,17 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            {previewUrls.length === 0 ? (
+            {isUploading ? (
+              <div className="flex flex-col items-center justify-center p-8 space-y-4">
+                <div className="w-full max-w-xs bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div 
+                    className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">Uploading images... {Math.round(uploadProgress)}%</p>
+              </div>
+            ) : previewUrls.length === 0 ? (
               <div className="flex flex-col items-center gap-3">
                 <div className="p-3 bg-gray-50 rounded-full">
                   <ImageIcon className="h-8 w-8 text-gray-400" />
@@ -268,8 +287,7 @@ export function PostForm({ initialData, onSubmit, onCancel, onDelete }: PostForm
               <SelectContent>
                 <SelectItem value="instagram">Instagram</SelectItem>
                 <SelectItem value="facebook">Facebook</SelectItem>
-                <SelectItem value="twitter">Twitter</SelectItem>
-                <SelectItem value="linkedin">LinkedIn</SelectItem>
+                <SelectItem value="tiktok">TikTok</SelectItem>
               </SelectContent>
             </Select>
           </div>
