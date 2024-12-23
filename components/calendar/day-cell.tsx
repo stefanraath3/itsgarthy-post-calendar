@@ -1,10 +1,11 @@
 "use client";
 
 import { PostCard } from "@/components/post/post-card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Post } from "@/types";
-import { format, isToday } from "date-fns";
-import { Badge } from "@/components/ui/badge"; // Added Badge import
+import { format, isSameDay } from "date-fns";
+import { useEffect, useState } from "react";
 
 interface DayCellProps {
   day: Date;
@@ -21,8 +22,13 @@ export function DayCell({
   onDragOver,
   onDrop,
 }: DayCellProps) {
+  const [today, setToday] = useState<Date | null>(null);
   const isCurrentMonth = format(day, "MM") === format(new Date(), "MM");
-  
+
+  useEffect(() => {
+    setToday(new Date());
+  }, []);
+
   return (
     <div
       key={day.toISOString()}
@@ -31,7 +37,7 @@ export function DayCell({
         !isCurrentMonth && "bg-muted/50",
         "hover:border-primary/20"
       )}
-      style={{ minWidth: '200px' }}
+      style={{ minWidth: "200px" }}
       onDragOver={onDragOver}
       onDrop={() => onDrop(day)}
     >
@@ -41,16 +47,15 @@ export function DayCell({
             {format(day, "EEE")}
           </span>
           <span
-  className={cn(
-    "text-2xl font-semibold -mt-1 inline-flex items-center justify-center",
-    isToday(day)
-      ? "text-white bg-primary w-10 h-10 rounded-full"
-      : ""
-  )}
->
-  {format(day, "d")}
-</span>
-
+            className={cn(
+              "text-2xl font-semibold -mt-1 inline-flex items-center justify-center",
+              today && isSameDay(day, today)
+                ? "text-white bg-primary w-10 h-10 rounded-full"
+                : ""
+            )}
+          >
+            {format(day, "d")}
+          </span>
         </div>
         {posts.length > 0 && (
           <Badge variant="secondary" className="text-base px-3 py-1">
