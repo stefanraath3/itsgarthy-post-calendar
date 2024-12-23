@@ -83,8 +83,8 @@ export default function CalendarPage() {
   };
 
   return (
-    <main className="w-screen h-screen overflow-hidden bg-gray-50">
-      <div className="h-full flex flex-col">
+    <main className="w-screen min-h-screen overflow-auto bg-gray-50">
+      <div className="min-h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 bg-white border-b">
           <div className="flex items-center gap-4">
@@ -112,8 +112,8 @@ export default function CalendarPage() {
         </div>
 
         {/* Calendar Container */}
-        <div className="flex-1 overflow-hidden p-6">
-          <div className="h-full bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col">
+        <div className="flex-1 overflow-auto p-6">
+          <div className="min-h-full bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col">
             <div className="p-4 border-b">
               <CalendarHeader
                 view={view}
@@ -125,7 +125,7 @@ export default function CalendarPage() {
               />
             </div>
 
-            <div className="flex-1 overflow-hidden p-4">
+            <div className="flex-1 overflow-auto p-4">
               <CalendarGrid
                 days={days}
                 posts={posts}

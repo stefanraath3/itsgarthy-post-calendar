@@ -3,7 +3,13 @@
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/lib/hooks/use-user";
-import { format } from "date-fns";
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  isSameMonth,
+  startOfMonth,
+} from "date-fns";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -18,6 +24,10 @@ export default function Home() {
   const { user } = useUser();
   const [notes, setNotes] = useState<Note[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const today = new Date();
+  const monthStart = startOfMonth(today);
+  const monthEnd = endOfMonth(today);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   // Fetch initial data
   useEffect(() => {
@@ -32,7 +42,7 @@ export default function Home() {
   }, [user?.id]);
 
   return (
-    <main className="w-screen h-screen overflow-hidden bg-gray-50">
+    <main className="w-screen min-h-screen overflow-auto bg-gray-50">
       <div className="max-w-[1800px] mx-auto p-6 h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -46,10 +56,10 @@ export default function Home() {
         <div className="flex gap-6 flex-1 min-h-0">
           {/* Notes Preview */}
           <div
-            className="w-[45%] bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col cursor-pointer hover:shadow-md transition-shadow"
+            className="w-[45%] bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col cursor-pointer hover:shadow-md transition-shadow min-h-0"
             onClick={() => router.push("/notes")}
           >
-            <div className="p-4 border-b flex items-center justify-between">
+            <div className="p-4 border-b flex items-center justify-between shrink-0">
               <h2 className="text-xl font-semibold">Notes & Ideas</h2>
               <Button variant="ghost" className="gap-2">
                 View All <ChevronRight className="h-4 w-4" />
@@ -82,16 +92,16 @@ export default function Home() {
 
           {/* Calendar Preview */}
           <div
-            className="w-[55%] bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col cursor-pointer hover:shadow-md transition-shadow"
+            className="w-[55%] bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col cursor-pointer hover:shadow-md transition-shadow min-h-0"
             onClick={() => router.push("/calendar")}
           >
-            <div className="p-4 border-b flex items-center justify-between">
+            <div className="p-4 border-b flex items-center justify-between shrink-0">
               <h2 className="text-xl font-semibold">Calendar</h2>
               <Button variant="ghost" className="gap-2">
                 Open Calendar <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <div className="p-4 flex-1 flex flex-col">
+            <div className="p-4 flex-1 flex flex-col overflow-y-auto">
               <div className="grid grid-cols-7 gap-1 text-sm mb-2">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                   (day) => (
@@ -105,18 +115,20 @@ export default function Home() {
                 )}
               </div>
               <div className="grid grid-cols-7 gap-1 flex-1">
-                {Array.from({ length: 35 }).map((_, i) => {
+                {daysInMonth.map((date) => {
+                  const dayNum = format(date, "d");
                   const hasPost = posts.some(
                     (post) =>
-                      format(new Date(post.scheduled_date), "d") ===
-                      String(i + 1)
+                      format(new Date(post.scheduled_date), "d") === dayNum
                   );
                   return (
                     <div
-                      key={i}
-                      className="aspect-square p-1 text-sm border rounded-md flex flex-col items-center justify-center"
+                      key={dayNum}
+                      className={`aspect-square p-1 text-sm border rounded-md flex flex-col items-center justify-center ${
+                        !isSameMonth(date, today) ? "text-gray-300" : ""
+                      }`}
                     >
-                      <span className="font-medium">{i + 1}</span>
+                      <span className="font-medium">{dayNum}</span>
                       {hasPost && (
                         <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1" />
                       )}
