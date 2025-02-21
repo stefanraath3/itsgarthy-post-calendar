@@ -1,11 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { CalendarDays } from "lucide-react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { CalendarDays } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -37,13 +44,13 @@ export default function LoginPage() {
           password,
           options: {
             data: {
-              email_confirmed: true
-            }
-          }
+              email_confirmed: true,
+            },
+          },
         });
 
         if (signUpError) throw signUpError;
-        
+
         // Immediately sign in after registration
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
@@ -80,8 +87,12 @@ export default function LoginPage() {
               <CalendarDays className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">itsgarthy&apos;s Content Calendar</h1>
-          <p className="text-muted-foreground text-sm">Plan, schedule, and manage your content seamlessly</p>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Content Calendar
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Plan, schedule, and manage your content seamlessly
+          </p>
         </div>
 
         <Card className="border-border/40 shadow-lg">
@@ -89,8 +100,8 @@ export default function LoginPage() {
             <CardHeader>
               <CardTitle>{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
               <CardDescription>
-                {isSignUp 
-                  ? "Enter your details to create a new account" 
+                {isSignUp
+                  ? "Enter your details to create a new account"
                   : "Enter your email to sign in to your account"}
               </CardDescription>
             </CardHeader>
@@ -124,11 +135,17 @@ export default function LoginPage() {
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button className="w-full" type="submit" disabled={isLoading}>
-                {isLoading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+                {isLoading
+                  ? "Loading..."
+                  : isSignUp
+                  ? "Create Account"
+                  : "Sign In"}
               </Button>
               <div className="text-sm text-center space-x-1">
                 <span className="text-muted-foreground">
-                  {isSignUp ? "Already have an account?" : "Don't have an account?"}
+                  {isSignUp
+                    ? "Already have an account?"
+                    : "Don't have an account?"}
                 </span>
                 <button
                   type="button"
@@ -143,9 +160,9 @@ export default function LoginPage() {
         </Card>
 
         <div className="text-center text-sm text-muted-foreground">
-          <a href="#" className="hover:text-primary transition-colors">✨ Redesign ✨</a>
-     
-        
+          <a href="#" className="hover:text-primary transition-colors">
+            ✨ Redesign ✨
+          </a>
         </div>
       </div>
     </main>
